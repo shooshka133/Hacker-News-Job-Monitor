@@ -42,8 +42,10 @@ A fully automated job monitoring system using **n8n** that scrapes the [Hacker N
 
 ## 📁 Files
 
-- `Hacker News Job Monitor.json`: Hacker News Job Monitor.json, README.md
-- `screenshots/`: hn_gs_output, n8n_workflow
+
+- `Hacker News Job Monitor.json`: Import into n8n
+- `screenshot1.png`, `screenshot2.png`: Visual output
+
 
 ---
 
