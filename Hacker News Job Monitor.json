@@ -1,0 +1,308 @@
+{
+  "name": "Content Monitor & Alert System",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://hnrss.org/jobs",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -300,
+        -80
+      ],
+      "id": "2fcdd4a9-9283-4525-bee8-d0583909238c",
+      "name": "RSS Read"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1Id20Ax7rQkGiby0-pkQgqKJzWUfAqWDF942vVmcIwzk",
+          "mode": "list",
+          "cachedResultName": "Hacker News Job Monitor",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Id20Ax7rQkGiby0-pkQgqKJzWUfAqWDF942vVmcIwzk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Id20Ax7rQkGiby0-pkQgqKJzWUfAqWDF942vVmcIwzk/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "title": "={{ $json.title }}",
+            "company": "={{ $json.company }}",
+            "link": "={{ $json.link }}",
+            "scraped_at": "={{ new Date($json.isoDate).toLocaleString(\"en-US\", { timeZone: \"UTC\" }) }}",
+            "pubDate": "={{ $json.clean_date }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "company",
+              "displayName": "company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "link",
+              "displayName": "link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "pubDate",
+              "displayName": "pubDate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "scraped_at",
+              "displayName": "scraped_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        440,
+        -60
+      ],
+      "id": "b5f16d31-a95b-42fe-9bf2-cfce55880b44",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ObGGaMLO1r4QTNjA",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map((item, index) => {\n  const title = item.json.title;\n  let companyMatch = title.match(/^([^(<]+?)\\s*\\((YC\\s*[SWXF]\\d{2})\\)/i);\n  if (!companyMatch) {\n    companyMatch = title.match(/^([^–<(]+?)(?=\\s*(?:is hiring|hiring|–|:|$))/i);\n  }\n\n  const company = companyMatch ? \n    companyMatch[1].trim().replace(/[\\s–:]+$/, '') \n    : title.split(/[–:(]/)[0].trim();\n\n  const originalDate = item.json.pubDate;\n  const parsedDate = new Date(originalDate);\n  const readableDate = parsedDate.toISOString().replace('T', ' ').slice(0, 19);\n\n  return {\n    json: {\n      ...item.json,\n      company,\n      yc_batch: title.match(/\\((YC\\s*[SWXF]\\d{2})\\)/i)?.[1] || null,\n      clean_date: readableDate\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -140,
+        -80
+      ],
+      "id": "c6dd13b6-caeb-461d-803d-9f9dd3068bc1",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "mode": "combineBySql",
+        "query": "SELECT\n  input1.*\nFROM\n  input1\nLEFT JOIN\n  input2\nON\n  input1.link = input2.link\nWHERE\n  input2.link IS NULL\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        280,
+        -60
+      ],
+      "id": "8b5ba396-474b-436f-8183-d3d075aa9fdb",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1Id20Ax7rQkGiby0-pkQgqKJzWUfAqWDF942vVmcIwzk",
+          "mode": "list",
+          "cachedResultName": "Hacker News Job Monitor",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Id20Ax7rQkGiby0-pkQgqKJzWUfAqWDF942vVmcIwzk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Id20Ax7rQkGiby0-pkQgqKJzWUfAqWDF942vVmcIwzk/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        100,
+        80
+      ],
+      "id": "de3dc323-dd67-4a70-8711-c9f514fa7241",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ObGGaMLO1r4QTNjA",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -20,
+        80
+      ],
+      "id": "e9d92d6e-419c-4f05-bdd7-b9eef6e0fd59",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -460,
+        -80
+      ],
+      "id": "ba07b026-3bb2-4e78-ad31-bb288385c0d9",
+      "name": "Schedule Trigger"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "RSS Read": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "No Operation, do nothing": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "RSS Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ec310cc8-69d9-46d3-b8dc-3676128638aa",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "10907c258b9952d1ed82554480b03d9281a3e221805ca67e54327f691233cd5d"
+  },
+  "id": "pqDOC9ttmEAD6VlX",
+  "tags": []
+}
