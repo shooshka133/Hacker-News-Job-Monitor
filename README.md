@@ -15,7 +15,7 @@ A fully automated job monitoring system using **n8n** that scrapes the [Hacker N
   - Scraped timestamp
 - Deduplicates using SQL Merge
 - Saves unique jobs to Google Sheets
-- Scheduled to run every 5 minutes (or as needed)
+- Scheduled to run every 6 hours (or as needed)
 
 ---
 
@@ -25,7 +25,7 @@ A fully automated job monitoring system using **n8n** that scrapes the [Hacker N
 - 🧠 Company name extraction using regex + fallback logic
 - 🕒 ISO timestamp conversion to readable format
 - ✅ Deduplication via SQL Merge on `job URL`
-- 🗓 Cron scheduling (every 5 mins or daily)
+- 🗓 Cron scheduling (every 6 hours or daily)
 - 📄 Google Sheets integration
 
 ---
