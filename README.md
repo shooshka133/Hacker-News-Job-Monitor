@@ -1,90 +1,38 @@
-# 🧠 Hacker News Job Monitor
+# 📰 Hacker News Job Monitor
 
-A fully automated job monitoring system using **n8n** that scrapes the [Hacker News "Who’s Hiring"](https://news.ycombinator.com/jobs) RSS feed, extracts useful job info, deduplicates entries, and saves them into **Google Sheets** on a schedule.
-
----
+A Make.com (or n8n) workflow that fetches new “Jobs” posts from Hacker News via the HNRSS feed, parses out title, company, link, and publication date, de‑duplicates entries, and logs them into Google Sheets.
 
 ## 🔧 What It Does
 
-- Fetches latest job posts from Hacker News Jobs RSS (`https://hnrss.org/jobs`)
-- Parses and extracts:
-  - Job title
-  - Company name (intelligently parsed from title)
-  - Job URL
-  - Posted date
-  - Scraped timestamp
-- Deduplicates using SQL Merge
-- Saves unique jobs to Google Sheets
-- Scheduled to run every 6 hours (or as needed)
-
----
-
-## 💡 Features
-
-- 📰 RSS parsing via `XML` node
-- 🧠 Company name extraction using regex + fallback logic
-- 🕒 ISO timestamp conversion to readable format
-- ✅ Deduplication via SQL Merge on `job URL`
-- 🗓 Cron scheduling (every 6 hours or daily)
-- 📄 Google Sheets integration
-
----
+1. **HTTP Request** to https://hnrss.org/jobs  
+2. **Parse XML** into JSON  
+3. **Extract & transform**  
+   - Split out `company` from the title  
+   - Clean up `pubDate` into a human format  
+   - Tag each record with `source`, `scraped_at`, and `status`  
+4. **Deduplicate** (via a SQL merge or lookup)  
+5. **Append** new rows to Google Sheets  
+6. (Optional) **Schedule** to run every X minutes or hours  
 
 ## 🛠 Tools Used
 
-| Tool        | Purpose                        |
-|-------------|---------------------------------|
-| n8n         | Automation orchestration       |
-| Google Sheets | Job storage & deduplication  |
-| RSS Feed    | Source: Hacker News Jobs RSS   |
+| Tool          | Purpose                         |
+|---------------|---------------------------------|
+| Make.com/n8n  | Orchestrate HTTP → XML → Sheets |
+| Google Sheets | Central job log & dedup store   |
 
----
+## 🧪 Sample Run
+
+![Feed Fetched & Parsed](screenshots/feed_parsed.png)  
+![New Row in Sheets](screenshots/gs_logged.png)
 
 ## 📁 Files
 
+- `Hacker News Job Monitor.json` — the workflow blueprint  
+- `screenshots/` — visuals showing the parsed feed and the sheet entry  
 
-- `Hacker News Job Monitor.json`: Import into n8n
-- `screenshot1.png`, `screenshot2.png`: Visual output
+## ✅ Setup
 
-
----
-
-## ✅ Setup Instructions
-
-1. **Create Google Sheet** with columns:
-   - `title`, `company`, `url`, `pubDate`, `scraped_at`, `clean_date`
-2. **Import** the provided `.json` workflow into n8n
-3. Update:
-   - Google Sheets credentials
-   - Spreadsheet ID and Sheet name
-4. Enable the Cron node (e.g., every 5 minutes)
-5. **Save** and activate the workflow
-
----
-
-## 🧪 Sample Output
-
-| Title                                                | Company     | URL                                                  | Date & Time |
-|------------------------------------------------------|-------------|-------------------------------------------------------|-------------|
-| MindsDB is hiring an AI solutions engineer           | MindsDB     | https://job-boards.greenhouse.io/mindsdb/...         | 2025-07-02  |
-| Lago is hiring for ten roles                         | Lago        | https://www.ycombinator.com/companies/lago/jobs      | 2025-06-28  |
-| Bitmovin is hiring a Junior Solutions Engineer       | Bitmovin    | https://bitmovin.com/careers/7943569002/             | 2025-06-27  |
-
----
-
-## 📸  Screenshots
-
-![New Job Logged](screenshots/screenshot1.png)
-![Deduplication in Action](screenshots/screenshot2.png)
-
----
-
-## 🚀 License
-
-MIT
-
----
-
-## 🙌 Author
-
-Built by [@shooshka133](https://github.com/shooshka133)
+1. Create a Google Sheet with columns:
+   ```text
+   title | company | link | pubDate | source | scraped_at | status
