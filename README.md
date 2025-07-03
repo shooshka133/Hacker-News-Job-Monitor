@@ -74,9 +74,8 @@ A fully automated job monitoring system using **n8n** that scrapes the [Hacker N
 
 ## 📸  Screenshots
 
-- ![Google Sheets output](screenshots/hn_gs_output.png)
- 
-- ![workflow image](screenshots/n8n_workflow.png)
+![New Job Logged](screenshots/screenshot1.png)
+![Deduplication in Action](screenshots/screenshot2.png)
 
 ---
 
